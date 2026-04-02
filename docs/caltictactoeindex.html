@@ -1,592 +1,424 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pocket Tools — Calculator & Tic Tac Toe</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Calculator & Tic Tac Toe</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-      --bg-primary: #ffffff;
-      --bg-secondary: #f5f5f3;
-      --bg-tertiary: #eeede9;
-      --text-primary: #1a1a18;
-      --text-secondary: #5f5e5a;
-      --text-tertiary: #888780;
-      --border-light: rgba(0,0,0,0.10);
-      --border-mid: rgba(0,0,0,0.18);
-      --radius-md: 8px;
-      --radius-lg: 12px;
-      --blue: #185FA5;
-      --blue-dark: #0C447C;
-      --red: #A32D2D;
-      --blue-bg: #E6F1FB;
-    }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f4f4f0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+    color: #1a1a1a;
+  }
 
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg-primary: #1e1e1c;
-        --bg-secondary: #272725;
-        --bg-tertiary: #2e2e2b;
-        --text-primary: #f0efe9;
-        --text-secondary: #a8a79f;
-        --text-tertiary: #6e6d68;
-        --border-light: rgba(255,255,255,0.09);
-        --border-mid: rgba(255,255,255,0.16);
-        --blue: #378ADD;
-        --blue-dark: #185FA5;
-        --red: #E24B4A;
-        --blue-bg: #0c2540;
-      }
-    }
+  h1 {
+    font-size: 18px;
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.03em;
+  }
 
-    body {
-      font-family: 'Syne', sans-serif;
-      background: var(--bg-tertiary);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem 1rem 3rem;
-      gap: 1.5rem;
-    }
+  .app {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+    max-width: 700px;
+  }
 
-    .app-title {
-      font-size: 13px;
-      font-weight: 600;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--text-tertiary);
-    }
+  @media (max-width: 600px) {
+    .app { grid-template-columns: 1fr; }
+  }
 
-    .panels {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.25rem;
-      width: 100%;
-      max-width: 720px;
-    }
+  /* ── CALCULATOR ── */
+  .calc-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #e0ddd6;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
 
-    @media (max-width: 580px) {
-      .panels {
-        grid-template-columns: 1fr;
-      }
-    }
+  .calc-display {
+    background: #f8f7f3;
+    padding: 16px 18px 12px;
+    text-align: right;
+    border-bottom: 1px solid #e0ddd6;
+  }
 
-    .panel {
-      background: var(--bg-primary);
-      border: 0.5px solid var(--border-light);
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-    }
+  .calc-expr {
+    font-size: 13px;
+    color: #999;
+    min-height: 18px;
+    word-break: break-all;
+  }
 
-    .panel-label {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--text-tertiary);
-      padding: 0.85rem 1rem 0;
-    }
+  .calc-main {
+    font-size: 32px;
+    font-weight: 500;
+    color: #1a1a1a;
+    word-break: break-all;
+    line-height: 1.2;
+    margin-top: 4px;
+  }
 
-    /* ────────────────────────────
-       CALCULATOR
-    ──────────────────────────── */
+  .calc-btns {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: #e0ddd6;
+  }
 
-    .calc-display {
-      padding: 0.5rem 1rem 0.85rem;
-      text-align: right;
-    }
+  .cb {
+    height: 54px;
+    font-size: 16px;
+    font-weight: 400;
+    border: none;
+    cursor: pointer;
+    background: #fff;
+    color: #1a1a1a;
+    transition: background 0.1s;
+    font-family: inherit;
+  }
 
-    .calc-expr {
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      color: var(--text-tertiary);
-      min-height: 16px;
-      word-break: break-all;
-    }
+  .cb:hover { background: #f8f7f3; }
+  .cb:active { background: #edecea; transform: scale(0.97); }
 
-    .calc-val {
-      font-family: 'DM Mono', monospace;
-      font-size: 36px;
-      font-weight: 300;
-      color: var(--text-primary);
-      letter-spacing: -0.02em;
-      word-break: break-all;
-      line-height: 1.1;
-      min-height: 44px;
-    }
+  .cb.op   { color: #185FA5; font-weight: 500; }
+  .cb.fn   { background: #f8f7f3; color: #666; font-size: 14px; }
+  .cb.fn:hover { background: #edecea; }
 
-    .calc-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 0.5px;
-      background: var(--border-light);
-      border-top: 0.5px solid var(--border-light);
-    }
+  .cb.eq {
+    background: #185FA5;
+    color: #fff;
+    font-size: 20px;
+  }
+  .cb.eq:hover  { background: #1a6ab8; }
+  .cb.eq:active { background: #0C447C; }
 
-    .cb {
-      background: var(--bg-primary);
-      border: none;
-      padding: 0;
-      height: 58px;
-      font-family: 'DM Mono', monospace;
-      font-size: 17px;
-      font-weight: 400;
-      color: var(--text-primary);
-      cursor: pointer;
-      transition: background 0.1s, transform 0.08s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
+  .cb.span2 { grid-column: span 2; }
 
-    .cb:hover  { background: var(--bg-secondary); }
-    .cb:active { background: var(--bg-tertiary); transform: scale(0.96); }
+  /* ── TIC TAC TOE ── */
+  .ttt-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #e0ddd6;
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
 
-    .cb.op {
-      color: var(--blue);
-      font-weight: 500;
-      font-size: 20px;
-    }
+  .ttt-heading {
+    font-size: 13px;
+    font-weight: 500;
+    color: #999;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
 
-    .cb.fn {
-      background: var(--bg-secondary);
-      color: var(--text-secondary);
-      font-size: 13px;
-      font-weight: 600;
-      font-family: 'Syne', sans-serif;
-      letter-spacing: 0.02em;
-    }
+  .score-row {
+    display: flex;
+    gap: 12px;
+  }
 
-    .cb.fn:hover { background: var(--bg-tertiary); }
+  .score-box {
+    text-align: center;
+    background: #f8f7f3;
+    border-radius: 10px;
+    padding: 6px 16px;
+    min-width: 60px;
+  }
 
-    .cb.eq {
-      background: var(--blue);
-      color: #fff;
-      font-size: 22px;
-    }
+  .score-val { font-size: 20px; font-weight: 500; }
+  .score-lbl { font-size: 11px; color: #999; margin-top: 2px; }
 
-    .cb.eq:hover  { background: var(--blue-dark); }
-    .cb.eq:active { background: var(--blue-dark); transform: scale(0.96); }
+  .ttt-status {
+    font-size: 15px;
+    font-weight: 500;
+    color: #1a1a1a;
+    min-height: 22px;
+  }
 
-    .cb.span2 { grid-column: span 2; }
+  .ttt-board {
+    display: grid;
+    grid-template-columns: repeat(3, 64px);
+    grid-template-rows: repeat(3, 64px);
+    gap: 6px;
+  }
 
-    /* ────────────────────────────
-       TIC TAC TOE
-    ──────────────────────────── */
+  .ttt-cell {
+    width: 64px;
+    height: 64px;
+    background: #f8f7f3;
+    border: 1px solid #e0ddd6;
+    border-radius: 10px;
+    font-size: 26px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.1s;
+    user-select: none;
+  }
 
-    .ttt-body {
-      padding: 0.75rem 1rem 1rem;
-    }
+  .ttt-cell:hover:not(.taken) {
+    background: #fff;
+    border-color: #bbb;
+  }
 
-    .ttt-status {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      margin-bottom: 0.75rem;
-      min-height: 20px;
-      letter-spacing: 0.01em;
-    }
+  .ttt-cell.x    { color: #185FA5; }
+  .ttt-cell.o    { color: #D85A30; }
+  .ttt-cell.win  { background: #dbeeff; border-color: #7ab8f5; }
+  .ttt-cell.taken { cursor: default; }
 
-    .ttt-status span {
-      color: var(--text-primary);
-    }
+  .ttt-reset {
+    font-size: 13px;
+    padding: 7px 20px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background: transparent;
+    color: #666;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.1s;
+  }
 
-    .ttt-board {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 5px;
-      margin-bottom: 0.75rem;
-    }
-
-    .ttt-cell {
-      background: var(--bg-secondary);
-      border: 0.5px solid var(--border-light);
-      border-radius: var(--radius-md);
-      aspect-ratio: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'DM Mono', monospace;
-      font-size: 30px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.1s, transform 0.08s;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .ttt-cell:hover:not(.taken) {
-      background: var(--bg-tertiary);
-    }
-
-    .ttt-cell:active:not(.taken) {
-      transform: scale(0.93);
-    }
-
-    .ttt-cell.x-mark { color: var(--blue); }
-    .ttt-cell.o-mark { color: var(--red); }
-
-    .ttt-cell.win-cell {
-      background: var(--blue-bg);
-      border-color: var(--border-mid);
-    }
-
-    .ttt-cell.taken {
-      cursor: default;
-    }
-
-    .ttt-score {
-      display: flex;
-      gap: 6px;
-    }
-
-    .score-chip {
-      flex: 1;
-      background: var(--bg-secondary);
-      border: 0.5px solid var(--border-light);
-      border-radius: var(--radius-md);
-      padding: 6px 8px;
-      text-align: center;
-    }
-
-    .score-chip .sc-label {
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.10em;
-      text-transform: uppercase;
-      color: var(--text-tertiary);
-    }
-
-    .score-chip .sc-val {
-      font-family: 'DM Mono', monospace;
-      font-size: 22px;
-      font-weight: 400;
-      color: var(--text-primary);
-      line-height: 1.2;
-    }
-
-    .score-chip.x-chip .sc-label { color: var(--blue); }
-    .score-chip.o-chip .sc-label { color: var(--red); }
-
-    .ttt-reset {
-      width: 100%;
-      margin-top: 0.65rem;
-      padding: 9px;
-      background: transparent;
-      border: 0.5px solid var(--border-mid);
-      border-radius: var(--radius-md);
-      font-family: 'Syne', sans-serif;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--text-secondary);
-      cursor: pointer;
-      transition: background 0.1s;
-    }
-
-    .ttt-reset:hover  { background: var(--bg-secondary); }
-    .ttt-reset:active { background: var(--bg-tertiary); }
-
-    /* ────────────────────────────
-       FOOTER
-    ──────────────────────────── */
-
-    .footer {
-      font-size: 11px;
-      color: var(--text-tertiary);
-      letter-spacing: 0.05em;
-    }
-  </style>
+  .ttt-reset:hover { background: #f8f7f3; }
+</style>
 </head>
 <body>
 
-  <p class="app-title">Pocket Tools</p>
+<h1>Calculator & Tic Tac Toe</h1>
 
-  <div class="panels">
+<div class="app">
 
-    <!-- ── CALCULATOR PANEL ── -->
-    <div class="panel">
-      <div class="panel-label">Calculator</div>
-      <div class="calc-display">
-        <div class="calc-expr" id="cExpr"></div>
-        <div class="calc-val"  id="cVal">0</div>
-      </div>
-      <div class="calc-grid">
-        <!-- Row 1: functions + divide -->
-        <button class="cb fn" data-a="ac">AC</button>
-        <button class="cb fn" data-a="pm">+/−</button>
-        <button class="cb fn" data-a="pct">%</button>
-        <button class="cb op" data-a="op" data-v="÷">÷</button>
-        <!-- Row 2 -->
-        <button class="cb" data-a="num" data-v="7">7</button>
-        <button class="cb" data-a="num" data-v="8">8</button>
-        <button class="cb" data-a="num" data-v="9">9</button>
-        <button class="cb op" data-a="op" data-v="×">×</button>
-        <!-- Row 3 -->
-        <button class="cb" data-a="num" data-v="4">4</button>
-        <button class="cb" data-a="num" data-v="5">5</button>
-        <button class="cb" data-a="num" data-v="6">6</button>
-        <button class="cb op" data-a="op" data-v="−">−</button>
-        <!-- Row 4 -->
-        <button class="cb" data-a="num" data-v="1">1</button>
-        <button class="cb" data-a="num" data-v="2">2</button>
-        <button class="cb" data-a="num" data-v="3">3</button>
-        <button class="cb op" data-a="op" data-v="+">+</button>
-        <!-- Row 5 -->
-        <button class="cb span2" data-a="num" data-v="0">0</button>
-        <button class="cb" data-a="dot">.</button>
-        <button class="cb eq" data-a="eq">=</button>
-      </div>
+  <!-- CALCULATOR -->
+  <div class="calc-card">
+    <div class="calc-display">
+      <div class="calc-expr" id="expr"></div>
+      <div class="calc-main" id="disp">0</div>
     </div>
+    <div class="calc-btns">
+      <button class="cb fn" data-a="clear">AC</button>
+      <button class="cb fn" data-a="sign">+/−</button>
+      <button class="cb fn" data-a="pct">%</button>
+      <button class="cb op" data-a="op" data-v="÷">÷</button>
 
-    <!-- ── TIC TAC TOE PANEL ── -->
-    <div class="panel">
-      <div class="panel-label">Tic Tac Toe</div>
-      <div class="ttt-body">
-        <div class="ttt-status" id="tStatus">Turn: <span>X</span></div>
-        <div class="ttt-board"  id="tBoard"></div>
-        <div class="ttt-score">
-          <div class="score-chip x-chip">
-            <div class="sc-label">X wins</div>
-            <div class="sc-val" id="sX">0</div>
-          </div>
-          <div class="score-chip">
-            <div class="sc-label">Draws</div>
-            <div class="sc-val" id="sD">0</div>
-          </div>
-          <div class="score-chip o-chip">
-            <div class="sc-label">O wins</div>
-            <div class="sc-val" id="sO">0</div>
-          </div>
-        </div>
-        <button class="ttt-reset" id="tReset">New Game</button>
-      </div>
+      <button class="cb" data-a="num" data-v="7">7</button>
+      <button class="cb" data-a="num" data-v="8">8</button>
+      <button class="cb" data-a="num" data-v="9">9</button>
+      <button class="cb op" data-a="op" data-v="×">×</button>
+
+      <button class="cb" data-a="num" data-v="4">4</button>
+      <button class="cb" data-a="num" data-v="5">5</button>
+      <button class="cb" data-a="num" data-v="6">6</button>
+      <button class="cb op" data-a="op" data-v="−">−</button>
+
+      <button class="cb" data-a="num" data-v="1">1</button>
+      <button class="cb" data-a="num" data-v="2">2</button>
+      <button class="cb" data-a="num" data-v="3">3</button>
+      <button class="cb op" data-a="op" data-v="+">+</button>
+
+      <button class="cb span2" data-a="num" data-v="0">0</button>
+      <button class="cb" data-a="dot">.</button>
+      <button class="cb eq" data-a="eq">=</button>
     </div>
-
   </div>
 
-  <p class="footer">Responsive · Light &amp; Dark Mode</p>
+  <!-- TIC TAC TOE -->
+  <div class="ttt-card">
+    <div class="ttt-heading">Tic Tac Toe</div>
 
-  <script>
-    /* ═══════════════════════════════════════
-       CALCULATOR LOGIC
-    ═══════════════════════════════════════ */
-    (function () {
-      let cur = '0',
-          prev = null,
-          op = null,
-          justEq = false,
-          expr = '';
+    <div class="score-row">
+      <div class="score-box">
+        <div class="score-val" id="sx" style="color:#185FA5">0</div>
+        <div class="score-lbl">X wins</div>
+      </div>
+      <div class="score-box">
+        <div class="score-val" id="sd" style="color:#999">0</div>
+        <div class="score-lbl">Draws</div>
+      </div>
+      <div class="score-box">
+        <div class="score-val" id="so" style="color:#D85A30">0</div>
+        <div class="score-lbl">O wins</div>
+      </div>
+    </div>
 
-      const cVal  = document.getElementById('cVal');
-      const cExpr = document.getElementById('cExpr');
+    <div class="ttt-status" id="ttt-status">X's turn</div>
 
-      function fmt(n) {
-        if (!isFinite(n)) return n > 0 ? 'Error' : 'Error';
-        let s = parseFloat(n.toPrecision(10)).toString();
-        if (s.length > 14) s = parseFloat(n.toPrecision(8)).toExponential(3);
-        return s;
-      }
+    <div class="ttt-board" id="board">
+      <div class="ttt-cell" data-i="0"></div>
+      <div class="ttt-cell" data-i="1"></div>
+      <div class="ttt-cell" data-i="2"></div>
+      <div class="ttt-cell" data-i="3"></div>
+      <div class="ttt-cell" data-i="4"></div>
+      <div class="ttt-cell" data-i="5"></div>
+      <div class="ttt-cell" data-i="6"></div>
+      <div class="ttt-cell" data-i="7"></div>
+      <div class="ttt-cell" data-i="8"></div>
+    </div>
 
-      function update() {
-        cVal.textContent  = cur;
-        cExpr.textContent = expr;
-      }
+    <button class="ttt-reset" id="ttt-reset">New game</button>
+  </div>
 
-      function applyOp(a, o, b) {
-        if (o === '+') return a + b;
-        if (o === '−') return a - b;
-        if (o === '×') return a * b;
-        if (o === '÷') return b === 0 ? (a === 0 ? 0 : Infinity) : a / b;
-        return b;
-      }
+</div>
 
-      document.querySelectorAll('.cb').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          const a = btn.dataset.a;
-          const v = btn.dataset.v;
+<script>
+// ════════════════════════════════
+//  CALCULATOR
+// ════════════════════════════════
+let cur = '0', prev = null, op = null, justEq = false;
+const dispEl = document.getElementById('disp');
+const exprEl = document.getElementById('expr');
 
-          if (a === 'ac') {
-            cur = '0'; prev = null; op = null; justEq = false; expr = '';
+function fmt(n) {
+  if (!isFinite(n)) return 'Error';
+  let s = parseFloat(n.toPrecision(12)).toString();
+  if (s.length > 14) s = parseFloat(n.toPrecision(9)).toExponential();
+  return s;
+}
 
-          } else if (a === 'pm') {
-            cur = fmt(parseFloat(cur) * -1);
+function renderCalc() {
+  dispEl.textContent = cur;
+}
 
-          } else if (a === 'pct') {
-            cur = fmt(parseFloat(cur) / 100);
+document.querySelector('.calc-btns').addEventListener('click', function(e) {
+  const btn = e.target.closest('[data-a]');
+  if (!btn) return;
+  const a = btn.dataset.a;
+  const v = btn.dataset.v;
 
-          } else if (a === 'num') {
-            if (justEq) { cur = v; justEq = false; }
-            else {
-              if (cur === '0' && v !== '.') cur = v;
-              else if (cur.includes('.') && v === '.') { /* no-op */ }
-              else cur = cur + v;
-            }
-            if (cur.length > 14) cur = cur.slice(0, 14);
+  if (a === 'clear') {
+    cur = '0'; prev = null; op = null; justEq = false;
+    exprEl.textContent = '';
 
-          } else if (a === 'dot') {
-            if (justEq) { cur = '0.'; justEq = false; }
-            else if (!cur.includes('.')) cur += '.';
+  } else if (a === 'num') {
+    if (justEq) { cur = v; justEq = false; }
+    else cur = (cur === '0' && v !== '.') ? v : (cur.length < 12 ? cur + v : cur);
 
-          } else if (a === 'op') {
-            if (op && !justEq) {
-              const res = applyOp(parseFloat(prev), op, parseFloat(cur));
-              prev = fmt(res);
-              cur  = fmt(res);
-            } else {
-              prev = cur;
-            }
-            op = v;
-            expr = prev + ' ' + op;
-            justEq = false;
+  } else if (a === 'dot') {
+    if (justEq) { cur = '0.'; justEq = false; }
+    else if (!cur.includes('.')) cur += '.';
 
-          } else if (a === 'eq') {
-            if (op && prev !== null) {
-              const res = applyOp(parseFloat(prev), op, parseFloat(cur));
-              expr  = prev + ' ' + op + ' ' + cur + ' =';
-              cur   = fmt(res);
-              prev  = null;
-              op    = null;
-              justEq = true;
-            }
-          }
+  } else if (a === 'sign') {
+    if (cur !== '0') cur = cur.startsWith('-') ? cur.slice(1) : '-' + cur;
 
-          update();
-        });
-      });
+  } else if (a === 'pct') {
+    cur = fmt(parseFloat(cur) / 100);
 
-      /* Keyboard support */
-      document.addEventListener('keydown', function (e) {
-        const map = {
-          '0':'0','1':'1','2':'2','3':'3','4':'4',
-          '5':'5','6':'6','7':'7','8':'8','9':'9',
-          '+':'+','-':'−','*':'×','/':'÷','Enter':'=',
-          '=':'=','.':'.','Backspace':'bs','Escape':'ac','%':'%'
-        };
-        const k = map[e.key];
-        if (!k) return;
-        e.preventDefault();
-        if (k === 'bs') {
-          if (!justEq && cur.length > 1) cur = cur.slice(0, -1);
-          else cur = '0';
-          update(); return;
-        }
-        const btn = document.querySelector(
-          k === '=' ? '[data-a="eq"]' :
-          k === 'ac' ? '[data-a="ac"]' :
-          k === '%'  ? '[data-a="pct"]' :
-          k === '.'  ? '[data-a="dot"]' :
-          ['÷','×','−','+'].includes(k) ? `[data-a="op"][data-v="${k}"]` :
-          `[data-a="num"][data-v="${k}"]`
-        );
-        if (btn) btn.click();
-      });
+  } else if (a === 'op') {
+    if (op && prev !== null && !justEq) {
+      const r = calculate(parseFloat(prev), parseFloat(cur), op);
+      cur = fmt(r);
+    }
+    op = v; prev = cur; cur = '0'; justEq = false;
+    exprEl.textContent = prev + ' ' + op;
 
-    })();
+  } else if (a === 'eq') {
+    if (op && prev !== null) {
+      exprEl.textContent = prev + ' ' + op + ' ' + cur + ' =';
+      const r = calculate(parseFloat(prev), parseFloat(cur), op);
+      cur = fmt(r);
+      prev = null; op = null; justEq = true;
+    }
+  }
 
-    /* ═══════════════════════════════════════
-       TIC TAC TOE LOGIC
-    ═══════════════════════════════════════ */
-    (function () {
-      let board    = Array(9).fill(null);
-      let xTurn    = true;
-      let gameOver = false;
-      let scores   = { X: 0, O: 0, D: 0 };
+  renderCalc();
+});
 
-      const WIN_LINES = [
-        [0,1,2],[3,4,5],[6,7,8],   // rows
-        [0,3,6],[1,4,7],[2,5,8],   // cols
-        [0,4,8],[2,4,6]            // diags
-      ];
+function calculate(a, b, op) {
+  switch (op) {
+    case '+': return a + b;
+    case '−': return a - b;
+    case '×': return a * b;
+    case '÷': return b !== 0 ? a / b : NaN;
+    default:  return b;
+  }
+}
 
-      const tBoard  = document.getElementById('tBoard');
-      const tStatus = document.getElementById('tStatus');
-      const sX      = document.getElementById('sX');
-      const sO      = document.getElementById('sO');
-      const sD      = document.getElementById('sD');
+// ════════════════════════════════
+//  TIC TAC TOE
+// ════════════════════════════════
+const WIN_LINES = [
+  [0,1,2],[3,4,5],[6,7,8],
+  [0,3,6],[1,4,7],[2,5,8],
+  [0,4,8],[2,4,6]
+];
 
-      function renderBoard(winLine) {
-        tBoard.innerHTML = '';
-        board.forEach(function (val, idx) {
-          const cell = document.createElement('div');
-          cell.className = 'ttt-cell';
-          if (val)        cell.classList.add('taken');
-          if (val === 'X') cell.classList.add('x-mark');
-          if (val === 'O') cell.classList.add('o-mark');
-          if (winLine && winLine.includes(idx)) cell.classList.add('win-cell');
-          cell.textContent = val || '';
-          cell.addEventListener('click', function () { handleMove(idx); });
-          tBoard.appendChild(cell);
-        });
-      }
+let board = Array(9).fill(null);
+let turn  = 'X';
+let over  = false;
+let score = { X: 0, O: 0, D: 0 };
 
-      function checkResult() {
-        for (const [a, b, c] of WIN_LINES) {
-          if (board[a] && board[a] === board[b] && board[b] === board[c]) {
-            return { winner: board[a], line: [a, b, c] };
-          }
-        }
-        if (board.every(function (v) { return v !== null; })) {
-          return { winner: null, line: null, draw: true };
-        }
-        return null;
-      }
+const cells    = document.querySelectorAll('.ttt-cell');
+const statusEl = document.getElementById('ttt-status');
 
-      function handleMove(idx) {
-        if (gameOver || board[idx]) return;
-        board[idx] = xTurn ? 'X' : 'O';
+cells.forEach(function(cell) {
+  cell.addEventListener('click', function() {
+    const i = parseInt(cell.dataset.i);
+    if (over || board[i]) return;
 
-        const result = checkResult();
-        if (result) {
-          gameOver = true;
-          if (result.draw) {
-            scores.D++;
-            tStatus.innerHTML = 'Draw!';
-            renderBoard(null);
-          } else {
-            scores[result.winner]++;
-            tStatus.innerHTML = '<span>' + result.winner + '</span> wins!';
-            renderBoard(result.line);
-          }
-          updateScores();
-        } else {
-          xTurn = !xTurn;
-          tStatus.innerHTML = 'Turn: <span>' + (xTurn ? 'X' : 'O') + '</span>';
-          renderBoard(null);
-        }
-      }
+    board[i] = turn;
+    cell.textContent = turn;
+    cell.classList.add(turn.toLowerCase(), 'taken');
 
-      function updateScores() {
-        sX.textContent = scores.X;
-        sO.textContent = scores.O;
-        sD.textContent = scores.D;
-      }
+    const winLine = getWinLine();
+    if (winLine) {
+      winLine.forEach(function(idx) { cells[idx].classList.add('win'); });
+      statusEl.textContent = turn + ' wins! 🎉';
+      score[turn]++;
+      updateScore();
+      over = true;
+    } else if (board.every(Boolean)) {
+      statusEl.textContent = "It's a draw!";
+      score.D++;
+      updateScore();
+      over = true;
+    } else {
+      turn = turn === 'X' ? 'O' : 'X';
+      statusEl.textContent = turn + "'s turn";
+    }
+  });
+});
 
-      function newGame() {
-        board    = Array(9).fill(null);
-        xTurn    = true;
-        gameOver = false;
-        tStatus.innerHTML = 'Turn: <span>X</span>';
-        renderBoard(null);
-      }
+function getWinLine() {
+  for (var i = 0; i < WIN_LINES.length; i++) {
+    var line = WIN_LINES[i];
+    var a = line[0], b = line[1], c = line[2];
+    if (board[a] && board[a] === board[b] && board[a] === board[c]) return line;
+  }
+  return null;
+}
 
-      document.getElementById('tReset').addEventListener('click', newGame);
-      renderBoard(null);
+function updateScore() {
+  document.getElementById('sx').textContent = score.X;
+  document.getElementById('so').textContent = score.O;
+  document.getElementById('sd').textContent = score.D;
+}
 
-    })();
-  </script>
+document.getElementById('ttt-reset').addEventListener('click', function() {
+  board = Array(9).fill(null);
+  turn  = 'X';
+  over  = false;
+  cells.forEach(function(c) {
+    c.textContent = '';
+    c.className = 'ttt-cell';
+  });
+  statusEl.textContent = "X's turn";
+});
+</script>
+
 </body>
 </html>
